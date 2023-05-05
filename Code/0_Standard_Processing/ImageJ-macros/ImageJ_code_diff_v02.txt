@@ -1,0 +1,99 @@
+/*
+Code for processing floc camera images
+- based on a difference of images
+- uses Triangle threshold, which works better for smaller particles
+- KS 5/3/2022, based on previous imageJ routines by Ali Keyvan, Ehsan Abolfazli, and Ryan Osborn
+*/
+
+// initial directory info
+
+run("Set Measurements...", "area mean standard min perimeter bounding fit shape redirect=None decimal=4");
+setBatchMode(true);
+dir1=getDirectory("startup");
+list1= getFileList(dir1);
+
+// loop through each folder/file
+
+for (i=0; i<list1.length; i++) {
+   dirmain=dir1+list1[i];
+   dir2=substring(dirmain,0,lengthOf(dirmain)-1)+"/" ; // renames so that it only processes folders
+   list2= getFileList(dir2); // files in the subfolders
+
+   // check for images/files in directory, if none, then break and get out of the loop
+
+   if (list2.length==0) {
+      print("End of processing");
+      break;
+   }
+
+   // loop through all the images in the folder
+
+   for (j=0; j<list2.length-1; j++) {
+
+      // set the image paths and open two sequential images
+
+      path1 = dir2+list2[j];
+      path2 = dir2+list2[j+1];
+      open(path2);
+      open(path1);
+      rename('gray.jpg');
+      run("Duplicate...", "title=edges");
+      run("Find Edges");
+
+      // subtract the first from the second and save as a grayscale image
+
+      imageCalculator("Subtract create", list2[j+1],'gray.jpg');
+      run("Invert");
+      rename("substract.jpg");
+
+      // obtain some string values of path and file names
+
+      dotIndex = lastIndexOf(path2, ".");
+      img1 = substring(list2[j],0,lengthOf(list2[j])-4);
+      img2 = substring(list2[j+1],0,lengthOf(list2[j+1])-4);
+      imgd = img1+"diff.jpg";
+      print("Processing: folder ", i+1,", image "+img2+" - "+img1);
+      path1 = substring(path1, 0, dotIndex); // remove extension
+
+      // create a second differences images that will
+
+      imageCalculator("Subtract create", list2[j+1],'gray.jpg');
+      rename("binary.jpg");
+      selectWindow("binary.jpg");
+      run("Invert");
+      setAutoThreshold("Triangle");
+      run("Make Binary");
+      run("Erode");
+      // run("Erode");
+      // run("Erode");
+      run("Fill Holes");
+      // run("Watershed");
+
+      // measure the particles in the thresholded/binary image but use gray scale values from gray.jpg and save the data
+      // to the roi manager so that the particle outlines can be put over the top of the images
+
+      run("Set Measurements...", "area mean standard min perimeter bounding fit shape redirect=edges decimal=3");
+      run("Analyze Particles...", "size=16-Infinity circularity=0.075-0.99 exclude clear add");
+
+      // save data
+
+      saveAs("Measurements", path1+".txt"); // save the all the calculated values
+
+      selectWindow('gray.jpg');
+      run("From ROI Manager");
+      saveAs("Jpeg", path1+"outlines.jpg");
+
+      selectWindow("substract.jpg");
+      roiManager("Set Color", "blue");
+      roiManager("Set Line Width", 1);
+      run("From ROI Manager");
+      saveAs("Jpeg", dir2+imgd);
+      selectWindow("edges");
+      saveAs("Jpeg", path1+"edges.jpg");
+      close("*");
+
+      // delete the first image in the difference to save space
+
+      dummy = File.delete(dir2+list2[j]); // result of delete (1 or 0) is stored in a dummy variable so that it doesn't print out
+   }
+}
