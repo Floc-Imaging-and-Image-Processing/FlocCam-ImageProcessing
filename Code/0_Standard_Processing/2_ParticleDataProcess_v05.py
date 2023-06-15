@@ -18,7 +18,7 @@ minarea = 9 # min area for a particle in pixels
 muperpix = 0.925 # muperpix is the number of microns per per pixel (FlocARAZI)
 # muperpix = 1.28 # muperpix is the number of microns per per pixel (Lab cam)
 
-darea = 0 # use 1 to base particle size on area, 0 to base it on the minor axis of the fit elips
+darea = 1 # use 1 to base particle size on area, 0 to base it on the minor axis of the fit ellipse
 
 minsize = 10   # min particle size in micron
 maxsize = 2000  # max particle size in micron
@@ -60,6 +60,7 @@ else:
 
 for j in range(1,len(paths)):
     path_main = paths.iloc[j,1]
+    print(path_main)
 
     # os.chdir(path_main)
 
