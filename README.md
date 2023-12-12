@@ -6,5 +6,9 @@ This repository contains the code needed to process images of suspended particle
 
 Detailed instructions on how to use code provided in this repository for processing FlocARAZI data can be found in the following [Google Doc Manual](https://docs.google.com/document/d/1fGbSWmZatIEV4-7_VkVtgW2ugC_lYcVD4lemXHgLsJk/edit?usp=sharing) for the repository.
 
-For processing and visualization of data not associated with vertical profiles over the water columns or time series at a point, use only the code in the folder ```\0_Standard_Processing```. Details regarding the use of the code in this folder can also be found in the following [Google Doc Manual](https://docs.google.com/document/d/1fGbSWmZatIEV4-7_VkVtgW2ugC_lYcVD4lemXHgLsJk/edit?usp=sharing).
+Requirements to run
 
+1. Python
+2. [ImageJ](https://imagej.net/ij/) and Java
+
+For processing and visualization of data not associated with vertical profiles over the water columns or time series at a point, use only the code in the folder ```\0_Standard_Processing```. Details regarding the use of the code in the folder ```\0_Standard_Processing``` can also be found in the following [Google Doc Manual](https://docs.google.com/document/d/1fGbSWmZatIEV4-7_VkVtgW2ugC_lYcVD4lemXHgLsJk/edit?usp=sharing).
