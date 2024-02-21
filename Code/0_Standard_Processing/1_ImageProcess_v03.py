@@ -184,7 +184,7 @@ if(subdirp == 0):
 
     # run ImageJ
 
-    str1 = 'java -jar '+CodePath+'/ij-1.52p.jar -batch '+ CodePath+ '/'+IJcode
+    str1 = 'java -jar '+CodePath+'/ij.jar -batch '+ CodePath+ '/'+IJcode
     os.system(str1)
 
     print('run time:', datetime.now() - startTime, '(',len(files_1),' images in folder)')
