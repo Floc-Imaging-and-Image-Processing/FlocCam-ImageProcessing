@@ -33,7 +33,8 @@ img_sz_y = 3000 # image size y
 # img_sz_y = 1080 # image size y
 edge_thickness = 1 # distance from the image edge a particle must exceed to be counted
 
-ms_model = 'sand_mud_models/SVM-linear-2.pickle'
+ms = 0 # set ms equal to 1 to classify each particle as a sand or mud particle. Set equal to zero or something other than 1 to bypass the classificaiton
+ms_model = 'sand_mud_models/SVM-linear-2.pickle' # if ms is 1, then give the path to the classifier model
 
 #............................................................................
 
@@ -48,9 +49,6 @@ import matplotlib.pyplot as plt
 import time
 time1 = time.time()
 import pickle
-
-# load the mud/sand classifier model
-loaded_model = pickle.load(open(ms_model, 'rb'))
 
 # find the data directories and setup an output direcectory
 
@@ -129,10 +127,13 @@ for j in range(1,len(paths)):
         
         # classify as mud or sand
         
-        inputdata = frames0[['Area','Perimeter','Major','Minor','Circularity','AR','Round','Solidity']].to_numpy()
-        
-        y_pred = loaded_model.predict(inputdata)
-        frames0['sand'] = y_pred
+        if ms ==1:
+            inputdata = frames0[['Area','Perimeter','Major','Minor','Circularity','AR','Round','Solidity']].to_numpy()
+            
+            loaded_model = pickle.load(open(ms_model, 'rb')) # load the mud/sand classifier model
+            
+            y_pred = loaded_model.predict(inputdata) # make the prediction
+            frames0['sand'] = y_pred # add a column in the dataframe with sand = 1 and mud = 0 
         
         # save the file
 
