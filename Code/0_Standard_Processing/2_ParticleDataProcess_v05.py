@@ -33,6 +33,8 @@ img_sz_y = 3000 # image size y
 # img_sz_y = 1080 # image size y
 edge_thickness = 1 # distance from the image edge a particle must exceed to be counted
 
+ms_model = 'sand_mud_models/SVM-linear-2.pickle'
+
 #............................................................................
 
 # imports
@@ -45,6 +47,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import time
 time1 = time.time()
+import pickle
+
+# load the mud/sand classifier model
+loaded_model = pickle.load(open(ms_model, 'rb'))
 
 # find the data directories and setup an output direcectory
 
@@ -120,7 +126,14 @@ for j in range(1,len(paths)):
         (frames0['BX']+frames0['Width']<img_sz_x-edge_thickness) & (frames0['BX']>edge_thickness) &  # edge crit
         (frames0['BY']+frames0['Height']<img_sz_y-edge_thickness) & (frames0['BY']>edge_thickness) & # edge crit
         (frames0['Area']>=minarea) ] # min particle size in square pixels
-
+        
+        # classify as mud or sand
+        
+        inputdata = frames0[['Area','Perimeter','Major','Minor','Circularity','AR','Round','Solidity']].to_numpy()
+        
+        y_pred = loaded_model.predict(inputdata)
+        frames0['sand'] = y_pred
+        
         # save the file
 
         # dest_file_csv = super_path+ '/'    +str(int(k+1)).zfill(3)+'.csv'

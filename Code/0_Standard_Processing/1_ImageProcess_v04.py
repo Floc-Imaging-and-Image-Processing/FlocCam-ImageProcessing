@@ -8,14 +8,14 @@ where = '0_Paths.csv' # manage paths with the 0_Paths.csv file if you don't run 
 
 ts = 0 # enter 1 if you want PSD time series output. Enter zero for a single PSD. If "1" then a dir_size must be specified
 dir_size = 10  # number of images to include per distribution (will assume # per minute), ignored if ts = 0
-image_type = '.Bmp' # enter the file extention for your images
+image_type = '.jpg' # enter the file extention for your images
 
-# IJcode = 'ImageJ-macros/ImageJ_code_diff_v02.txt'
-IJcode = "ImageJ-macros/ImageJ_code_diff_v02_suppressoutput.txt"  
+IJcode = 'ImageJ-macros/ImageJ_code_diff_v02.txt'
+# IJcode = "ImageJ-macros/ImageJ_code_diff_v02_suppressoutput.txt"  
 # IJcode = "ImageJ-macros/ImageJ_code_diff_watershed_v02.txt"
 
 rmsrc = 0 # remove source images variable. enter 0 for "no" and "1" for yes
-subdirp = 0 # process all sub directories (subdirp = 1) or just the local one (subdirp = 0)
+subdirp = 1 # process all sub directories (subdirp = 1) or just the local one (subdirp = 0)
 #............................................................................
 
 # imports
