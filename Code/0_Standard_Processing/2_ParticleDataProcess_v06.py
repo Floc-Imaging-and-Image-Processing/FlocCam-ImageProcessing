@@ -1,37 +1,49 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Thu May  5 12:51:10 2022
+Updated 2024-03-22
 
-@author: strom-adm
+@author: Kyle Strom
 """
-
-#user inputs
+#............................................................................
+# user inputs
 #............................................................................
 
-# directory to process
+# --- directory to process ---
+
 where = '0_Paths.csv'
 
-# processing values
-focus = 100 # value of max grayscale in edge detection flocs < focus are treated as out of focus
-minarea = 9 # min area for a particle in pixels
-muperpix = 0.925 # muperpix is the number of microns per per pixel (FlocARAZI)
-# muperpix = 1.28 # muperpix is the number of microns per per pixel (Lab cam)
-
-darea = 1 # use 1 to base particle size on area, 0 to base it on the minor axis of the fit ellipse
-
-minsize = 10   # min particle size in micron
-maxsize = 2000  # max particle size in micron
-
-vdist = 1 # use particle vol for distributions rather than the frequency weighting... if 1, then the w value below does not matter, if 0, w value is used
-w = 3 # the distribution weighting value 0 = by number, 1 = by diameter (Ali's), 2 = by area, 3 = by vol
-nb = 30 # number of bins used to develop the particle psd and size stats
+# --- image values ---
 
 img_sz_x = 4000 # image size x
 img_sz_y = 3000 # image size y
 # img_sz_x = 1920 # image size x
 # img_sz_y = 1080 # image size y
+
+muperpix = 0.925 # muperpix is the number of microns per per pixel (FlocARAZI)
+# muperpix = 1.28 # muperpix is the number of microns per per pixel (Lab cam)
+
+# --- filter criteria ---
+
+focus = 100 # value of max grayscale in edge detection flocs < focus are treated as out of focus
+minarea = 9 # min area for a particle in pixels
+
 edge_thickness = 1 # distance from the image edge a particle must exceed to be counted
+
+angle_std_cr = 9.5 # minimum standard deviation in angle of major axis for in focus particles
+axisR_cr = 3 # maximum average ratio of major/minor axis for in focus particles 
+
+# --- size distribution variables ---
+
+minsize = 10   # min particle size in micron
+maxsize = 2000  # max particle size in micron
+
+includestreaks = 0 # set to zero to process sizes without the streak-impacted images
+
+darea = 1 # use 1 to base particle size on area, 0 to base it on the minor axis of the fit ellipse
+vdist = 1 # use particle vol for distributions rather than the frequency weighting... if 1, then the w value below does not matter, if 0, w value is used
+w = 3 # the distribution weighting value 0 = by number, 1 = by diameter (Ali's), 2 = by area, 3 = by vol
+nb = 30 # number of bins used to develop the particle psd and size stats
 
 #............................................................................
 
@@ -50,6 +62,11 @@ time1 = time.time()
 
 datafiletype = '.txt'
 output_folder = '0_analysis_output' # make sure this directory does not exist (created directory will be main path/output_folder)
+
+name_list=['Number', 'ImgNo', 'NoInTot', 'Area', 'MeanGreyValue', 'StdDev', 'MinGreyValue', 'MaxGreyValue', 'Perimeter', 'BX', 'BY', 'Width', 'Height', 'Major', 'Minor','Angle', 'Circularity', 'AR','Round', 'Solidity'] # works in the processing in imageJ_code_diffXX.txt
+
+outputfiles_ns = []
+outputfiles_ys = []
 
 CodePath = os.getcwd()
 
@@ -79,6 +96,7 @@ for j in range(1,len(paths)):
 
     os.chdir(path_main)
 
+
     for k in np.arange(len(sorted_dirs)): #loop over directories
         print('Roaming through folder', int(k+1), 'of', len(sorted_dirs), 'to find you the best flocs :)')
         datafiles = sorted(glob.glob(sorted_dirs[k]+'/*'+'.txt'))
@@ -87,18 +105,43 @@ for j in range(1,len(paths)):
         numfiles = len(datafiles)
 
         counter = 0
+        total_particles = 0
+        streak_num = 0
+        
         for f in np.arange(numfiles): #loop over files in each directory
             datafile=datafiles[f]
 
             if os.path.exists(datafile):
+                # read in the individual particle size file
                 temp = pd.read_csv(datafile,  delim_whitespace=True)
-                temp.insert(0, "Number", (np.arange(temp.shape[0])+1).tolist(), True)
-                if counter==0:
-                    col_2 = (np.arange(temp.shape[0])+1).tolist()
-                else:
-                    col_2 = (np.arange(frames0.shape[0], temp.shape[0]+ frames0.shape[0])+1).tolist()
-                temp.insert(1, "Img_no", ((f+1)*np.ones(temp.shape[0])).astype(int).tolist(), True)
+                
+                # add in the particle number, image number, and particle number in total 
+                temp.insert(0, "Number", (np.arange(len(temp))+1).tolist(), True)
+                temp.insert(1, "Img_no", ((f+1)*np.ones(len(temp))).astype(int).tolist(), True)
+                col_2 = (np.arange(total_particles, len(temp)+ total_particles)+1).tolist()
                 temp.insert(2, "No_in_tot",col_2, True)
+
+                # rename the column headers of the master dataframe
+                temp.columns.values[:] = name_list[:]
+                
+                # keep track of the total number of particles (before filtering)
+                total_particles = total_particles + len(temp)
+                
+                ## Define critria to drop rows (flocs) and filter out bad points
+
+                temp = temp[(temp['MaxGreyValue']>=focus) & # clarity crit
+                (temp['BX']+temp['Width']<img_sz_x-edge_thickness) & (temp['BX']>edge_thickness) &  # edge crit
+                (temp['BY']+temp['Height']<img_sz_y-edge_thickness) & (temp['BY']>edge_thickness) & # edge crit
+                (temp['Area']>=minarea) ] # min particle size in square pixels
+                
+                angle_std = np.std(temp.Angle)
+                axisR = np.mean(temp.Major/temp.Minor)
+                
+                if angle_std < angle_std_cr and axisR > axisR_cr:
+                    temp['Streak_impact'] = 1
+                    streak_num = streak_num + 1
+                else:
+                    temp['Streak_impact'] = 0
 
                 if counter==0:
                     frames0 = temp
@@ -106,33 +149,31 @@ for j in range(1,len(paths)):
                     frames0 = pd.concat([frames0,temp])
                 counter = counter + 1
 
-        # rename the column headers of the master dataframe
-
-        name_list=['Number', 'ImgNo', 'NoInTot', 'Area', 'MeanGreyValue', 'StdDev', 'MinGreyValue', 'MaxGreyValue',
-        'Perimeter', 'BX', 'BY', 'Width', 'Height', 'Major', 'Minor',' Angle', 'Circularity', 'AR',
-        'Round', 'Solidity'] # works in the processing in imageJ_code_diffXX.txt
-
-        frames0.columns.values[:] = name_list[:]
-
-        ## Define critria to drop rows (flocs) and filter out bad points
-
-        frames0 = frames0[(frames0['MaxGreyValue']>=focus) & # clarity crit
-        (frames0['BX']+frames0['Width']<img_sz_x-edge_thickness) & (frames0['BX']>edge_thickness) &  # edge crit
-        (frames0['BY']+frames0['Height']<img_sz_y-edge_thickness) & (frames0['BY']>edge_thickness) & # edge crit
-        (frames0['Area']>=minarea) ] # min particle size in square pixels
-
+        print('Number of total images =', counter, ', Number of images impacted by streaking =',streak_num)
         # save the file
 
+        no_streaks = frames0[(frames0['Streak_impact']==0)]
+        
         # dest_file_csv = super_path+ '/'    +str(int(k+1)).zfill(3)+'.csv'
         # dest_file_csv = output_folder+ '/'+str(sorted_dirs[k])+'.csv'
         dest_file_csv = super_path+ '/'+str(sorted_dirs[k])+'.csv'
+        dest_file_csv_all = super_path+ '/'+str(sorted_dirs[k])+'_all.csv'
 
-        frames0.to_csv(dest_file_csv,index=False)
+        frames0.to_csv(dest_file_csv_all,index=False)
+        no_streaks.to_csv(dest_file_csv,index=False)
+        
+        outputfiles_ns.append(dest_file_csv)
+        outputfiles_ys.append(dest_file_csv_all)
 
     # pull in size data and start processing --------------------------------
 
     # find the nubmer of files to process
-    gsdfiles_pixel = sorted(glob.glob(super_path+'/'+"*.csv"))
+    # gsdfiles_pixel = sorted(glob.glob(super_path+'/'+"*.csv"))
+    if includestreaks == 0:
+        gsdfiles_pixel = outputfiles_ns
+    else:
+        gsdfiles_pixel = outputfiles_ys
+        
     first = 1
     last=len(gsdfiles_pixel)
 
