@@ -25,11 +25,14 @@ muperpix = 0.925 # muperpix is the number of microns per per pixel (FlocARAZI)
 
 # --- filter criteria ---
 
-focus = 100 # value of max grayscale in edge detection flocs < focus are treated as out of focus
+# minimums
 minarea = 9 # min area for a particle in pixels
-
 edge_thickness = 1 # distance from the image edge a particle must exceed to be counted
 
+# focus criteria
+focus = 100 # value of max grayscale in edge detection flocs < focus are treated as out of focus
+
+# streaking criteria (filter images impacted by high-speed movement during image capture)
 angle_std_cr = 9.5 # minimum standard deviation in angle of major axis for in focus particles
 axisR_cr = 3 # maximum average ratio of major/minor axis for in focus particles 
 
