@@ -15,7 +15,7 @@ IJcode = "ImageJ-macros/ImageJ_code_diff_v02_suppressoutput.txt"
 # IJcode = "ImageJ-macros/ImageJ_code_diff_watershed_v02.txt"
 
 rmsrc = 0 # remove source images variable. enter 0 for "no" and "1" for yes
-subdirp = 0 # process all sub directories (subdirp = 1) or just the local one (subdirp = 0)
+subdirp = 1 # process all sub directories (subdirp = 1) or just the local one (subdirp = 0)
 #............................................................................
 
 # imports
@@ -68,10 +68,10 @@ if(subdirp == 1):
             dir_size = len(sorted(glob(path_main+'/*'+image_type)))
 
         # find files and re-organize them into directories with each directory containing the images to aggregate into a single PSD
-
-        files_1 = [f for f in os.listdir(path_main) if os.path.isfile(os.path.join(path_main, f)) if (f.lower().endswith(image_type))]
+        
+        files_1 = [f for f in os.listdir(path_main) if os.path.isfile(os.path.join(path_main, f)) if (f.endswith(image_type))]
         sorted_files = sorted(files_1)
-
+        
         modtime_arr = np.zeros(len(files_1))
         for ig in np.arange(len(files_1)):
             file_path = path_main+'/'+sorted_files[ig]
