@@ -33,8 +33,8 @@ edge_thickness = 1 # distance from the image edge a particle must exceed to be c
 focus = 100 # value of max grayscale in edge detection flocs < focus are treated as out of focus
 
 # streaking criteria (filter images impacted by high-speed movement during image capture)
-angle_std_cr = 9.5 # minimum standard deviation in angle of major axis for in focus particles
-axisR_cr = 3 # maximum average ratio of major/minor axis for in focus particles 
+rs = 1 # set to 1 if you want to filter out streaked images
+streak_model = './models/streak_remove_1.pickle'
 
 # --- size distribution variables ---
 
@@ -59,6 +59,8 @@ import shutil
 import pandas as pd
 import matplotlib.pyplot as plt
 import time
+import pickle
+
 time1 = time.time()
 
 # find the data directories and setup an output direcectory
@@ -68,8 +70,7 @@ output_folder = '0_analysis_output' # make sure this directory does not exist (c
 
 name_list=['Number', 'ImgNo', 'NoInTot', 'Area', 'MeanGreyValue', 'StdDev', 'MinGreyValue', 'MaxGreyValue', 'Perimeter', 'BX', 'BY', 'Width', 'Height', 'Major', 'Minor','Angle', 'Circularity', 'AR','Round', 'Solidity'] # works in the processing in imageJ_code_diffXX.txt
 
-outputfiles_ns = []
-outputfiles_ys = []
+loaded_model = pickle.load(open(streak_model, 'rb'))
 
 CodePath = os.getcwd()
 
@@ -98,7 +99,9 @@ for j in range(1,len(paths)):
     # create a master combined dataframe that integrates all of the individual image output .txt files - will be used for single PSD
 
     os.chdir(path_main)
-
+    
+    outputfiles_ns = []
+    outputfiles_ys = []
 
     for k in np.arange(len(sorted_dirs)): #loop over directories
         print('Roaming through folder', int(k+1), 'of', len(sorted_dirs), 'to find you the best flocs :)')
@@ -111,6 +114,11 @@ for j in range(1,len(paths)):
         total_particles = 0
         streak_num = 0
         
+        image = np.array([])
+        image_angle_std = np.array([])
+        image_major_minor = np.array([])
+        streak_no_streak = np.array([])
+                
         for f in np.arange(numfiles): #loop over files in each directory
             datafile=datafiles[f]
 
@@ -132,6 +140,7 @@ for j in range(1,len(paths)):
                 
                 ## Define critria to drop rows (flocs) and filter out bad points
 
+                totalparticles = len(temp)
                 temp = temp[(temp['MaxGreyValue']>=focus) & # clarity crit
                 (temp['BX']+temp['Width']<img_sz_x-edge_thickness) & (temp['BX']>edge_thickness) &  # edge crit
                 (temp['BY']+temp['Height']<img_sz_y-edge_thickness) & (temp['BY']>edge_thickness) & # edge crit
@@ -139,12 +148,35 @@ for j in range(1,len(paths)):
                 
                 angle_std = np.std(temp.Angle)
                 axisR = np.mean(temp.Major/temp.Minor)
+                frac_num_focus = len(temp)/total_particles
+                area_p = np.mean(temp['Area']/temp['Perimeter'])
                 
-                if angle_std < angle_std_cr and axisR > axisR_cr:
-                    temp['Streak_impact'] = 1
-                    streak_num = streak_num + 1
+                input = np.array([[angle_std,axisR,frac_num_focus,area_p]])
+                
+                if np.isnan(input).any() == False:
+                    yes_streak = loaded_model.predict(input)[0]
                 else:
-                    temp['Streak_impact'] = 0
+                    yes_streak = 1
+                    
+                if yes_streak == 1:
+                    streak_num = streak_num + 1
+                
+                image = np.append(image,f)
+                image_angle_std = np.append(image_angle_std,angle_std)
+                image_major_minor = np.append(image_major_minor,axisR)
+                streak_no_streak = np.append(streak_no_streak,yes_streak)
+                
+                temp['Streak_impact'] = yes_streak
+                
+                # if angle_std < angle_std_cr and axisR > axisR_cr:
+                #     temp_f['Streak_impact'] = 1
+                #     # streak_num = streak_num + 1
+                #     # print('streak image =', f)
+                #     streak_image = np.append(streak_image,f)
+                #     streak_angle_std = np.append(streak_angle_std,angle_std)
+                #     streak_major_minor = np.append(streak_major_minor,axisR)
+                # else:
+                #     temp_F['Streak_impact'] = 0
 
                 if counter==0:
                     frames0 = temp
@@ -152,13 +184,29 @@ for j in range(1,len(paths)):
                     frames0 = pd.concat([frames0,temp])
                 counter = counter + 1
 
+        # print and save information on number of images impacted by streaks and whether the size stats data include those images
+        
+        streak_df = pd.DataFrame({'Image': image, 'Avg_Angle_StD': image_angle_std, 'Avg_Major_Minor':image_major_minor, 'Streak':streak_no_streak})
+        streak_df.to_csv(super_path+'/Streak-impacted_images.csv',index=False)
+        
         print('Number of total images =', counter, ', Number of images impacted by streaking =',streak_num)
-        # save the file
+        
+        f = open(super_path+ '/Readme.txt', 'x')
+        f.write('Processing Information --- \n')
+        f.write('- Number of total images processed = '+str(counter)+'\n')
+        f.write('- Number of images impacted by streaking = '+str(streak_num)+'\n')
+        if includestreaks == 0:
+            f.write('- Do size statistics include potential streak-impacted images? NO')
+        else:
+            f.write('- Do size statistics include potential streak-impacted images? YES')
+        f.close()
 
+        # filter out all particles associated with a streak-impacted image
+        
         no_streaks = frames0[(frames0['Streak_impact']==0)]
         
-        # dest_file_csv = super_path+ '/'    +str(int(k+1)).zfill(3)+'.csv'
-        # dest_file_csv = output_folder+ '/'+str(sorted_dirs[k])+'.csv'
+        # save the data 
+
         dest_file_csv = super_path+ '/'+str(sorted_dirs[k])+'.csv'
         dest_file_csv_all = super_path+ '/'+str(sorted_dirs[k])+'_all.csv'
 
@@ -167,7 +215,7 @@ for j in range(1,len(paths)):
         
         outputfiles_ns.append(dest_file_csv)
         outputfiles_ys.append(dest_file_csv_all)
-
+    
     # pull in size data and start processing --------------------------------
 
     # find the nubmer of files to process
