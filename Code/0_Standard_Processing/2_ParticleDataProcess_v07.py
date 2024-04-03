@@ -128,7 +128,7 @@ for j in range(1,len(paths)):
                 
                 # add in the particle number, image number, and particle number in total 
                 temp.insert(0, "Number", (np.arange(len(temp))+1).tolist(), True)
-                temp.insert(1, "Img_no", ((f)*np.ones(len(temp))).astype(int).tolist(), True)
+                temp.insert(1, "Img_no", ((f+1)*np.ones(len(temp))).astype(int).tolist(), True)
                 col_2 = (np.arange(total_particles, len(temp)+ total_particles)+1).tolist()
                 temp.insert(2, "No_in_tot",col_2, True)
 
