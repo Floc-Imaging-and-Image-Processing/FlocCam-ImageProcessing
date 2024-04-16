@@ -1,0 +1,26 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: FlocProc
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Kyle
+    family-names: Strom
+    email: strom@vt.edu
+    affiliation: Virginia Tech
+    orcid: 'https://orcid.org/0000-0002-0798-7720'
+repository-code: >-
+  https://github.com/Floc-Imaging-and-Image-Processing/FlocCam-ImageProcessing
+abstract: >-
+  This repository contains the code needed to process images
+  of suspended particles for sizing. The base code can be
+  used on any set of images, but the focus of the material
+  contained in the repository is to provide a workflow for
+  processing FlocARAZI profile data. The FlocARAZI is an
+  imaging system that was designed for the measurement of
+  flocculated suspensions of mud in natural environments. 
+license: MIT
