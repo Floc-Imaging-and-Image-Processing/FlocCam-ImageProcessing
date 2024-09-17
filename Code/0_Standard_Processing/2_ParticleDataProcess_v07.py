@@ -34,7 +34,7 @@ focus = 100 # value of max grayscale in edge detection flocs < focus are treated
 
 # streaking criteria (filter images impacted by high-speed movement during image capture)
 rs = 1 # set to 1 if you want to filter out streaked images
-streak_model = './models/streak_remove_1.pickle'
+streak_model = './models/streak_remove_1.pickle' # based on Rio de la Plata streaks
 
 # --- size distribution variables ---
 
@@ -124,7 +124,8 @@ for j in range(1,len(paths)):
 
             if os.path.exists(datafile):
                 # read in the individual particle size file
-                temp = pd.read_csv(datafile,  delim_whitespace=True)
+                # temp = pd.read_csv(datafile,  delim_whitespace=True)
+                temp = pd.read_csv(datafile, sep=r"\s+")
                 
                 # add in the particle number, image number, and particle number in total 
                 temp.insert(0, "Number", (np.arange(len(temp))+1).tolist(), True)
