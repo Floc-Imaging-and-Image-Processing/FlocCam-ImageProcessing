@@ -11,4 +11,8 @@ Requirements to run
 1. Python
 2. [ImageJ](https://imagej.net/ij/) and Java
 
+The default data to be processed is a subsample of ```SampleData/2022-04-17-Seine-Day1-Cast4```. This contains 657 images collected over a depth in the Seine Estuary. 
+
+To test the image processing alone (no integration of CTD data for the development of a profile), try processing the images in ```SampleData/Mud-SieneCast04-small```.
+
 For processing and visualization of data not associated with vertical profiles over the water columns or time series at a point, use only the code in the folder ```\0_Standard_Processing```. Details regarding the use of the code in the folder ```\0_Standard_Processing``` can also be found in the following [Google Doc Manual](https://docs.google.com/document/d/1fGbSWmZatIEV4-7_VkVtgW2ugC_lYcVD4lemXHgLsJk/edit?usp=sharing).
