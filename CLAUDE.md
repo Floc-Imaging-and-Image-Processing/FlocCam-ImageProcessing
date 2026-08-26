@@ -48,8 +48,8 @@ Set `where = "local"` in any script to use `os.getcwd()` instead of the CSV.
 - Reads ImageJ `.txt` output files; applies three filters: focus (MaxGreyValue threshold), edge proximity, and minimum area
 - Converts pixel measurements to microns using `muperpix` (0.925 µm/px for FlocARAZI, 1.28 for lab cam)
 - Computes d16/d50/d84 from either volume-weighted (`vdist=1`) or d^w-weighted distributions
-- Outputs to `0_analysis_output/`: one CSV per image directory, `d_mu.csv` (all diameters), `dstats_by_volume.csv`, `Readme.txt` (image counts per directory), PDF plots
-- `2_ParticleDataProcess_v07.py` is kept as the previous version. It additionally ran every image through a scikit-learn streak classifier and could drop streak-flagged particles; v08 removes that entirely, so every image passing the three filters contributes to the PSD. v07 also crashes on the second image directory (`Readme.txt` opened with mode `'x'` inside the per-directory loop) — fixed in v08
+- Outputs to `0_analysis_output/`: one CSV per image directory, `d_mu.csv` (all diameters), `dstats_by_volume.csv`, PDF plots
+- `2_ParticleDataProcess_v07.py` is kept as the previous version. It additionally ran every image through a scikit-learn streak classifier and could drop streak-flagged particles; v08 removes that entirely, so every image passing the three filters contributes to the PSD. v07 also crashes on the second image directory (`Readme.txt` opened with mode `'x'` inside the per-directory loop); v08 writes no `Readme.txt` at all, since its only purpose was reporting streak counts
 
 **Step 3 — `3_ParticleDataVisualization_v02.py`**
 - Reads `d_mu.csv` and plots a single PSD or averaged range of PSDs

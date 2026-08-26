@@ -98,7 +98,6 @@ for j in range(1,len(paths)):
     os.chdir(path_main)
 
     outputfiles = []
-    image_counts = [] # (directory name, number of images) for the Readme
 
     for k in np.arange(len(sorted_dirs)): #loop over directories
         print('Roaming through folder', int(k+1), 'of', len(sorted_dirs), 'to find you the best flocs :)')
@@ -144,11 +143,9 @@ for j in range(1,len(paths)):
                     frames0 = pd.concat([frames0,temp])
                 counter = counter + 1
 
-        # print and record the number of images processed in this directory
+        # print the number of images processed in this directory
 
         print('Number of total images =', counter)
-
-        image_counts.append((str(sorted_dirs[k]), counter))
 
         # save the data 
 
@@ -157,16 +154,6 @@ for j in range(1,len(paths)):
         frames0.to_csv(dest_file_csv,index=False)
 
         outputfiles.append(dest_file_csv)
-
-    # write one Readme covering every directory processed
-
-    f = open(super_path+ '/Readme.txt', 'w')
-    f.write('Processing Information --- \n')
-    f.write('- Number of directories processed = '+str(len(image_counts))+'\n')
-    f.write('- Number of total images processed = '+str(sum(n for d, n in image_counts))+'\n')
-    for d, n in image_counts:
-        f.write('    - '+d+': '+str(n)+'\n')
-    f.close()
 
     # pull in size data and start processing --------------------------------
 
