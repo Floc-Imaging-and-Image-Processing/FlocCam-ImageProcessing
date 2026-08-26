@@ -39,6 +39,7 @@ Set `where = "local"` in any script to use `os.getcwd()` instead of the CSV.
 - Invokes ImageJ headlessly: `java -jar ij.jar -batch <macro>`
 - Key user parameters at top: `ts` (time series vs. single PSD), `dir_size`, `image_type`, `subdirp` (recurse subdirs), `rmsrc` (delete originals)
 - `group_time` and `group_time_unit` record how much real time one group of `dir_size` images represents. They are written to `0_group_info.csv` in the image directory and read back by Step 2, which uses them for the time index of `dstats_*.csv` and the time axis of the PDF plots. Step 2 falls back to 1 min per group if the file is absent (data grouped before this existed)
+- `check_group_time()` cross-checks the declared `group_time` against the median spacing of the image modification times and prints a warning if they disagree by more than `group_time_tol` (default 0.2, set to 0 to disable). It is advisory only — the declared value is always what gets written and used, since file mtimes do not always reflect capture time
 
 **ImageJ macros (`ImageJ-macros/`)**
 - Implement a *difference-of-images* technique: subtracts consecutive image pairs to isolate particles from background
