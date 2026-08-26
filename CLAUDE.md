@@ -61,7 +61,7 @@ Jupyter notebooks for FlocARAZI vertical profile deployments. Syncs image timest
 
 **Step 1 — `1_ProfileProcStep1_extract_CTD_and_image_info_v02.ipynb`**
 - Reads the raw CTD time series, the CastAway-processed CTD profile, and the image folder; applies an `hrC`/`minC`/`scC` clock correction to align CTD time to the camera stamp
-- Writes into the cast directory: `CTD-timeseries.csv`, `CTD-profile.csv`, `ImageTime.csv`, `Depth.csv` (total flow depth), and `Data-Breakpionts.csv` (filename typo is intentional — downstream notebooks read that exact name)
+- Writes into the cast directory: `CTD-timeseries.csv`, `CTD-profile.csv`, `ImageTime.csv`, `Depth.csv` (total flow depth), and `Data-Breakpoints.csv` (the set of time-window groupings for the cast)
 - Breakpoints are the time windows the cast is grouped by (e.g. `surface`, `mid-depth`, `bottom`, `profile`). They are currently entered manually as `names` / `startS` / `endS` arrays in seconds
 
 **`breakpoint_detection.py`** — standalone helper for finding breakpoints automatically instead of by hand. `detect_constant_depth_periods(ctd_df, ...)` Savitzky-Golay–smooths `Depth [m]`, flags spans whose depth change over `window_size` samples stays under `depth_threshold`, drops spans shorter than `min_duration`, and returns `(breakpoints, names, depth_smooth)` with names `breakpoint_1…N`. Expects a CTD dataframe with `Depth [m]` and `Time (Seconds)` columns. Note: no notebook imports it yet — Step 1 still uses the manual arrays.
