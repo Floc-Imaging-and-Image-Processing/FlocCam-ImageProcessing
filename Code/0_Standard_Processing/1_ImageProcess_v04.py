@@ -7,11 +7,16 @@
 where = "0_Paths.csv"  # manage paths with the 0_Paths.csv file if you don't run the file locally
 
 ts = 1  # enter 1 if you want PSD time series output. Enter zero for a single PSD. If "1" then a dir_size must be specified
-dir_size = 10  # number of images to include per distribution (will assume # per minute), ignored if ts = 0
+dir_size = 10  # number of images to include per distribution, ignored if ts = 0
+
+group_time = 1  # length of real time that one group of dir_size images represents
+group_time_unit = "min"  # unit for group_time, e.g. "min", "s", "hr". Both values are
+# written to 0_group_info.csv and picked up by 2_ParticleDataProcess_v08.py to set the
+# time column of its output csv files and the time axis of its plots
 image_type = ".jpg"  # enter the file extention for your images
 
-# IJcode = 'ImageJ-macros/ImageJ_code_diff_v02.txt'
-IJcode = "ImageJ-macros/ImageJ_code_diff_v02_suppressoutput.txt"
+IJcode = "ImageJ-macros/ImageJ_code_diff_v02.txt"
+# IJcode = "ImageJ-macros/ImageJ_code_diff_v02_suppressoutput.txt"
 # IJcode = "ImageJ-macros/ImageJ_code_diff_watershed_v02.txt"
 
 overlap = 1  # copy the first image of the next batch into each batch as one extra
@@ -133,6 +138,14 @@ if subdirp == 1:
         file_modlist_csv = path_main + "/filemod_list.csv"
         files_mod_df.to_csv(file_modlist_csv, index=False)
 
+        # save the grouping time base so that step 2 can label its output
+
+        group_info_df = pd.DataFrame(
+            [[dir_size, group_time, group_time_unit]],
+            columns=["dir_size", "group_time", "group_time_unit"],
+        )
+        group_info_df.to_csv(path_main + "/0_group_info.csv", index=False)
+
         # run ImageJ
 
         str1 = "java -jar " + CodePath + "/ij.jar -batch " + CodePath + "/" + IJcode
@@ -232,6 +245,14 @@ if subdirp == 0:
     )
     file_modlist_csv = path_main + "/filemod_list.csv"
     files_mod_df.to_csv(file_modlist_csv, index=False)
+
+    # save the grouping time base so that step 2 can label its output
+
+    group_info_df = pd.DataFrame(
+        [[dir_size, group_time, group_time_unit]],
+        columns=["dir_size", "group_time", "group_time_unit"],
+    )
+    group_info_df.to_csv(path_main + "/0_group_info.csv", index=False)
 
     # run ImageJ
 
