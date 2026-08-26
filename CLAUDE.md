@@ -34,6 +34,7 @@ Set `where = "local"` in any script to use `os.getcwd()` instead of the CSV.
 
 **Step 1 — `1_ImageProcess_v04.py`**
 - Groups raw images into numbered subdirectories (e.g., `001/`, `002/`) of `dir_size` images each
+- With `overlap = 1` (default) each subdirectory also gets a copy of the first image of the next batch, so the difference macro yields `dir_size` datasets per batch instead of `dir_size-1` — the last image of a batch is no longer left unpaired. That copy is excluded from `filemod_list.csv` and from `rmsrc` deletion, since the same image is recorded and deleted when it starts the next batch. The final batch gets no overlap image if no further images remain
 - Records source/destination/modification-time in `filemod_list.csv` (used later for timestamp extraction)
 - Invokes ImageJ headlessly: `java -jar ij.jar -batch <macro>`
 - Key user parameters at top: `ts` (time series vs. single PSD), `dir_size`, `image_type`, `subdirp` (recurse subdirs), `rmsrc` (delete originals)
