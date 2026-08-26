@@ -1,0 +1,12 @@
+# Everything the processing pipeline writes into the sample datasets is
+# ignored: grouped image subdirs (001/, 002/, ...), filemod_list.csv,
+# 0_analysis_output/, CTD-*.csv, ImageTime.csv, Depth.csv,
+# Data-Breakpoints.csv, ProcData_*.csv, and so on.
+#
+# The sample datasets already committed to the repo stay tracked and still
+# arrive with a normal clone -- .gitignore never applies to files git is
+# already tracking. This only hides NEW files created locally.
+#
+# To commit a genuinely new sample dataset, force it: git add -f <path>
+*
+!.gitignore
