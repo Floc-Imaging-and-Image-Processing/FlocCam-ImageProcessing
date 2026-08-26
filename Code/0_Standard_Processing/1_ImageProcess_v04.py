@@ -13,6 +13,10 @@ group_time = 1  # length of real time that one group of dir_size images represen
 group_time_unit = "min"  # unit for group_time, e.g. "min", "s", "hr". Both values are
 # written to 0_group_info.csv and picked up by 2_ParticleDataProcess_v08.py to set the
 # time column of its output csv files and the time axis of its plots
+
+group_time_tol = 0.2  # group_time above is taken as correct, but it is checked against
+# the image modification times and a warning is printed if the two disagree by more than
+# this fraction. Set to 0 to turn the check off
 image_type = ".jpg"  # enter the file extention for your images
 
 IJcode = "ImageJ-macros/ImageJ_code_diff_v02.txt"
@@ -43,6 +47,66 @@ import time
 
 time1 = time.time()
 from datetime import datetime
+
+# how many seconds each accepted group_time_unit represents
+
+seconds_per_unit = {
+    "s": 1.0,
+    "sec": 1.0,
+    "secs": 1.0,
+    "second": 1.0,
+    "seconds": 1.0,
+    "min": 60.0,
+    "mins": 60.0,
+    "minute": 60.0,
+    "minutes": 60.0,
+    "hr": 3600.0,
+    "hrs": 3600.0,
+    "hour": 3600.0,
+    "hours": 3600.0,
+}
+
+
+def check_group_time(modtime_list, dir_size, group_time, group_time_unit, tol):
+    """Sanity check the declared group_time against the image modification times.
+
+    The declared value stays authoritative and is what gets written to
+    0_group_info.csv. This only prints a warning, so that a group_time left over
+    from a previous dataset does not silently mislabel the step 2 time axis.
+    """
+
+    if tol <= 0:
+        return
+
+    unit = str(group_time_unit).lower()
+    if unit not in seconds_per_unit:
+        print("  group_time check skipped: unrecognised unit", group_time_unit)
+        return
+
+    if len(modtime_list) < 2:
+        return
+
+    # median spacing is used so that a gap in the images does not skew the estimate
+
+    dt = np.median(np.diff(np.sort(np.array(modtime_list))))
+    if dt <= 0:
+        print("  group_time check skipped: image timestamps are not increasing")
+        return
+
+    measured = dt * dir_size / seconds_per_unit[unit]
+
+    if abs(measured - group_time) > tol * group_time:
+        print(
+            "  WARNING: group_time is set to",
+            group_time,
+            group_time_unit,
+            "but the image timestamps put",
+            dir_size,
+            "images at",
+            round(measured, 3),
+            group_time_unit + ".",
+            "Update group_time, or ignore this if the file times are unreliable.",
+        )
 
 if where == "local":
     master_path = os.getcwd()
@@ -87,6 +151,10 @@ if subdirp == 1:
         for i in range(len(sorted_files)):
             modtime[i] = os.stat(sorted_files[i]).st_mtime
         modtime_list = modtime.tolist()
+
+        check_group_time(
+            modtime_list, dir_size, group_time, group_time_unit, group_time_tol
+        )
 
         src_list = []
         dst_list = []
@@ -195,6 +263,10 @@ if subdirp == 0:
     for i in range(len(sorted_files)):
         modtime[i] = os.stat(sorted_files[i]).st_mtime
     modtime_list = modtime.tolist()
+
+    check_group_time(
+        modtime_list, dir_size, group_time, group_time_unit, group_time_tol
+    )
 
     src_list = []
     dst_list = []
