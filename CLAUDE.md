@@ -13,7 +13,7 @@ Scripts must be run from within their containing directory (they use relative pa
 ```bash
 cd Code/0_Standard_Processing
 python 1_ImageProcess_v04.py        # Step 1: organize images + run ImageJ
-python 2_ParticleDataProcess_v07.py # Step 2: filter particles + compute PSDs
+python 2_ParticleDataProcess_v08.py # Step 2: filter particles + compute PSDs
 python 3_ParticleDataVisualization_v02.py # Step 3: plot individual PSDs
 ```
 
@@ -44,12 +44,12 @@ Set `where = "local"` in any script to use `os.getcwd()` instead of the CSV.
 - Outputs one `.txt` file per image pair containing particle measurements (area, perimeter, bounding box, ellipse fit, etc.)
 - `_suppressoutput` variant is the default; `_watershed` variant adds watershed segmentation for touching particles
 
-**Step 2 — `2_ParticleDataProcess_v07.py`**
+**Step 2 — `2_ParticleDataProcess_v08.py`** (current version)
 - Reads ImageJ `.txt` output files; applies three filters: focus (MaxGreyValue threshold), edge proximity, and minimum area
-- Streak detection via a pre-trained scikit-learn classifier (`models/streak_remove_1.pickle`) — features are angle std, major/minor axis ratio, fraction in focus, area/perimeter ratio
 - Converts pixel measurements to microns using `muperpix` (0.925 µm/px for FlocARAZI, 1.28 for lab cam)
 - Computes d16/d50/d84 from either volume-weighted (`vdist=1`) or d^w-weighted distributions
-- Outputs to `0_analysis_output/`: per-directory CSVs, `d_mu.csv` (all diameters), `dstats_by_volume.csv`, streak summary, PDF plots
+- Outputs to `0_analysis_output/`: one CSV per image directory, `d_mu.csv` (all diameters), `dstats_by_volume.csv`, `Readme.txt` (image counts per directory), PDF plots
+- `2_ParticleDataProcess_v07.py` is kept as the previous version. It additionally ran every image through a scikit-learn streak classifier and could drop streak-flagged particles; v08 removes that entirely, so every image passing the three filters contributes to the PSD. v07 also crashes on the second image directory (`Readme.txt` opened with mode `'x'` inside the per-directory loop) — fixed in v08
 
 **Step 3 — `3_ParticleDataVisualization_v02.py`**
 - Reads `d_mu.csv` and plots a single PSD or averaged range of PSDs
@@ -86,7 +86,7 @@ Jupyter notebooks for FlocARAZI vertical profile deployments. Syncs image timest
 
 ### Supporting files
 - `ij.jar` — ImageJ distribution bundled with the repo (required for headless execution)
-- `models/streak_remove_1.pickle` — scikit-learn model trained on Rio de la Plata streak data
+- `models/streak_remove_1.pickle` — scikit-learn streak classifier trained on Rio de la Plata data; used only by the legacy `2_ParticleDataProcess_v07.py`
 - `LISST_bins/` — three CSV files defining LISST-equivalent size bin edges (sphere, random, random-ext)
 
 ## Key Domain Conventions
