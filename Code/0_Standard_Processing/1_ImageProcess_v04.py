@@ -67,13 +67,19 @@ seconds_per_unit = {
 }
 
 
-def check_group_time(modtime_list, dir_size, group_time, group_time_unit, tol):
+def check_group_time(modtime_list, dir_size, group_time, group_time_unit, tol, ts):
     """Sanity check the declared group_time against the image modification times.
 
     The declared value stays authoritative and is what gets written to
     0_group_info.csv. This only prints a warning, so that a group_time left over
     from a previous dataset does not silently mislabel the step 2 time axis.
     """
+
+    # with ts = 0 all the images form a single PSD, so there is no grouping
+    # interval to check and the comparison would be meaningless
+
+    if ts == 0:
+        return
 
     if tol <= 0:
         return
@@ -153,7 +159,7 @@ if subdirp == 1:
         modtime_list = modtime.tolist()
 
         check_group_time(
-            modtime_list, dir_size, group_time, group_time_unit, group_time_tol
+            modtime_list, dir_size, group_time, group_time_unit, group_time_tol, ts
         )
 
         src_list = []
@@ -265,7 +271,7 @@ if subdirp == 0:
     modtime_list = modtime.tolist()
 
     check_group_time(
-        modtime_list, dir_size, group_time, group_time_unit, group_time_tol
+        modtime_list, dir_size, group_time, group_time_unit, group_time_tol, ts
     )
 
     src_list = []
