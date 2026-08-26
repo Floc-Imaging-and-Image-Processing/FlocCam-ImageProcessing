@@ -38,6 +38,7 @@ Set `where = "local"` in any script to use `os.getcwd()` instead of the CSV.
 - Records source/destination/modification-time in `filemod_list.csv` (used later for timestamp extraction)
 - Invokes ImageJ headlessly: `java -jar ij.jar -batch <macro>`
 - Key user parameters at top: `ts` (time series vs. single PSD), `dir_size`, `image_type`, `subdirp` (recurse subdirs), `rmsrc` (delete originals)
+- `group_time` and `group_time_unit` record how much real time one group of `dir_size` images represents. They are written to `0_group_info.csv` in the image directory and read back by Step 2, which uses them for the time index of `dstats_*.csv` and the time axis of the PDF plots. Step 2 falls back to 1 min per group if the file is absent (data grouped before this existed)
 
 **ImageJ macros (`ImageJ-macros/`)**
 - Implement a *difference-of-images* technique: subtracts consecutive image pairs to isolate particles from background
@@ -49,6 +50,7 @@ Set `where = "local"` in any script to use `os.getcwd()` instead of the CSV.
 - Reads ImageJ `.txt` output files; applies three filters: focus (MaxGreyValue threshold), edge proximity, and minimum area
 - Converts pixel measurements to microns using `muperpix` (0.925 µm/px for FlocARAZI, 1.28 for lab cam)
 - Computes d16/d50/d84 from either volume-weighted (`vdist=1`) or d^w-weighted distributions
+- Rows of `dstats_*.csv` are indexed by elapsed time, from `0_group_info.csv` (see Step 1); the index name carries the unit, e.g. `time [min]`
 - Outputs to `0_analysis_output/`: one CSV per image directory, `d_mu.csv` (all diameters), `dstats_by_volume.csv`, PDF plots
 - `2_ParticleDataProcess_v07.py` is kept as the previous version. It additionally ran every image through a scikit-learn streak classifier and could drop streak-flagged particles; v08 removes that entirely, so every image passing the three filters contributes to the PSD. v07 also crashes on the second image directory (`Readme.txt` opened with mode `'x'` inside the per-directory loop); v08 writes no `Readme.txt` at all, since its only purpose was reporting streak counts
 
