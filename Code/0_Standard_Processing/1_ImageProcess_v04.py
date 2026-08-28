@@ -120,7 +120,8 @@ if where == "local":
     CodePath = master_path
 else:
     paths = pd.read_csv(where)
-    master_path = paths.iloc[0, 1]
+    master_path = str(paths.iloc[0, 1]).strip()  # strip guards against a stray
+    # space after the comma in 0_Paths.csv, which would otherwise be part of the path
     CodePath = os.getcwd()
 
 # for processing all folders in directory ------------------------------------------
