@@ -56,7 +56,8 @@ else:
     paths = pd.read_csv(where)
 
 for j in range(1, len(paths)):
-    path_main = paths.iloc[j, 1]
+    path_main = str(paths.iloc[j, 1]).strip()  # strip guards against a stray space
+    # after the comma in 0_Paths.csv, which would otherwise be part of the path
 
     os.chdir(path_main)
 
