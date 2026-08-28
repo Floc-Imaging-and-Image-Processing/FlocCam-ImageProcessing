@@ -260,6 +260,12 @@ for j in range(1, len(paths)):
         first, len(minor_axis.columns) + 1
     )  # rename the columns headers to match file names
 
+    # a group whose particles are all removed by the filters reads back as an empty
+    # column, which pandas types as object and np.sqrt cannot operate on
+
+    area_pixel = area_pixel.apply(pd.to_numeric, errors="coerce")
+    minor_axis = minor_axis.apply(pd.to_numeric, errors="coerce")
+
     # input the constants for conversion from pixels to µm
 
     a_mu2 = area_pixel * muperpix**2  # make a floc area by microns
@@ -299,6 +305,19 @@ for j in range(1, len(paths)):
         for i in range(first, last):
             d = np.array(d_mu.iloc[:, i])
             d = d[~np.isnan(d)]
+
+            if len(d) == 0:
+                print(
+                    "  no particles survived the filters in group",
+                    i + 1,
+                    "-- its size stats are set to NaN",
+                )
+                d16_mu[i] = np.nan
+                d50_mu[i] = np.nan
+                d84_mu[i] = np.nan
+                Sed_vol_uL[i] = 0.0
+                continue
+
             dlog = np.log(d)
             dvol_uL = (
                 1e-9 * (np.pi / 6) * d**3
@@ -347,6 +366,18 @@ for j in range(1, len(paths)):
         for i in np.arange(first, last):
             d = np.array(d_mu.iloc[:, i])
             d = d[~np.isnan(d)]
+
+            if len(d) == 0:
+                print(
+                    "  no particles survived the filters in group",
+                    i + 1,
+                    "-- its size stats are set to NaN",
+                )
+                d16_mu[i] = np.nan
+                d50_mu[i] = np.nan
+                d84_mu[i] = np.nan
+                continue
+
             dlog = np.log(d)
             values, base = np.histogram(dlog, bins=nb)
             values = (
