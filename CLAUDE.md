@@ -49,7 +49,7 @@ Set `where = "local"` in any script to use `os.getcwd()` instead of the CSV.
 
 **Step 2 — `2_ParticleDataProcess_v08.py`** (current version)
 - Reads ImageJ `.txt` output files; applies three filters: focus (MaxGreyValue threshold), edge proximity, and minimum area
-- Converts pixel measurements to microns using `muperpix` (0.925 µm/px for FlocARAZI, 1.28 for lab cam)
+- Converts pixel measurements to microns using `muperpix`, set together with `img_sz_x`/`img_sz_y` in a per-camera block at the top: updated FlocARAZI (4096×3000, 0.662 µm/px, 10× lens) is active; Osborn FlocARAZI (4000×3000, 0.925, 5× lens) and the old lab cameras are commented out
 - Computes d16/d50/d84 from either volume-weighted (`vdist=1`) or d^w-weighted distributions
 - Rows of `dstats_*.csv` are indexed by elapsed time, from `0_group_info.csv` (see Step 1); the index name carries the unit, e.g. `time [min]`
 - Outputs to `0_analysis_output/`: one CSV per image directory, `d_mu.csv` (all diameters), `dstats_by_volume.csv`, PDF plots

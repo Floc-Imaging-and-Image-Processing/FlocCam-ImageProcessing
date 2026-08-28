@@ -19,15 +19,22 @@ and minimum-area filters now contributes to the PSD.
 
 where = "0_Paths.csv"
 
-# --- image values ---
+# --- camera settings ---
 
-img_sz_x = 4000  # image size x
+# Updated FlocARAZI camera
+img_sz_x = 4096  # image size x
 img_sz_y = 3000  # image size y
+muperpix = 0.662  # muperpix is the number of microns per per pixel (w/ 10x lens)
+
+# Osborn FlocARAZI
+# img_sz_x = 4000  # image size x
+# img_sz_y = 3000  # image size y
+# muperpix = 0.925  # muperpix is the number of microns per per pixel (w/ 5x lens)
+
+# old lab cameras
 # img_sz_x = 1920 # image size x
 # img_sz_y = 1080 # image size y
-
-muperpix = 0.925  # muperpix is the number of microns per per pixel (FlocARAZI)
-# muperpix = 1.28 # muperpix is the number of microns per per pixel (Lab cam)
+# muperpix = 1.28 # muperpix is the number of microns per per pixel
 
 # --- filter criteria ---
 
