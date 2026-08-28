@@ -30,6 +30,15 @@ groupoi = 23  # individual distribution (group of interest). Groups are the numb
 # directories from 1_ImageProcess_v04.py, one column of d_mu.csv each. How much real time
 # a group spans is set by group_time there, so this is a group number, not a minute
 
+# --- time base for the group labels ---
+
+# 1_ImageProcess_v04.py writes 0_group_info.csv into the image directory. These are only
+# used as a fallback when that file is absent, e.g. for data grouped before it existed.
+
+group_time_default = 1
+group_time_unit_default = "min"
+start_time_default = 0
+
 datafile = "d_mu.csv"
 output_folder = "0_analysis_output"  # make sure this directory does not exist (created directory will be main path/output_folder)
 
@@ -67,6 +76,23 @@ for j in range(1, len(paths)):
         print("you need to process the data first with 2_ParticleDataProcess_XX.py")
         sys.exit()
 
+    # read the grouping time base written by 1_ImageProcess_v04.py
+
+    group_info_file = os.path.join(path_main, "0_group_info.csv")
+    if os.path.exists(group_info_file):
+        group_info = pd.read_csv(group_info_file)
+        group_time = float(group_info["group_time"][0])
+        group_time_unit = str(group_info["group_time_unit"][0])
+        if "start_time" in group_info.columns:
+            start_time = float(group_info["start_time"][0])
+        else:
+            start_time = start_time_default
+    else:
+        group_time = group_time_default
+        group_time_unit = group_time_unit_default
+        start_time = start_time_default
+        print("  no 0_group_info.csv found, labelling groups in", group_time_unit)
+
     # pull in LISST bin sizes if using
 
     if useLISST == 1:
@@ -79,7 +105,7 @@ for j in range(1, len(paths)):
     d_mu = pd.read_csv(super_path + "/" + datafile)
 
     if combine == "yes":
-        subset = d_mu.iloc[:, groupfirst - 1 : grouplast + 1]
+        subset = d_mu.iloc[:, groupfirst - 1 : grouplast]
         d = np.array(subset.stack(dropna=True))
     else:
         d = np.array(d_mu.iloc[:, groupoi - 1])
@@ -143,10 +169,19 @@ for j in range(1, len(paths)):
         ylab2 = "Fraction Finer [$d^{" + str(w) + "}$ weighting]"
         data1 = "number"
 
+    # group number label, and the real time each group ends at:
+    # start_time + group number x group_time, in the unit set in 1_ImageProcess_v04.py
+
     if combine == "yes":
         dist = str(groupfirst) + "-" + str(grouplast)
+        dist_time = "%g-%g %s" % (
+            start_time + groupfirst * group_time,
+            start_time + grouplast * group_time,
+            group_time_unit,
+        )
     else:
         dist = str(groupoi)
+        dist_time = "%g %s" % (start_time + groupoi * group_time, group_time_unit)
 
     # plot the histogram
     fig = plt.figure()
@@ -162,7 +197,9 @@ for j in range(1, len(paths)):
     plt.xscale("log")
     plt.xlabel("$d$ [$\mu m$]")
     plt.ylabel(ylab2)
-    distype = "PSD num.: " + dist + "\nbin type: " + binmethod
+    distype = (
+        "PSD num.: " + dist + "\ntime: " + dist_time + "\nbin type: " + binmethod
+    )
     plt.annotate(
         distype,
         xy=(1, 1),
