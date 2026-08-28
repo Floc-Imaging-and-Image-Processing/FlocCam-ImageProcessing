@@ -63,6 +63,7 @@ nb = 30  # number of bins used to develop the particle psd and size stats
 
 group_time_default = 1
 group_time_unit_default = "min"
+start_time_default = 0  # also used when 0_group_info.csv predates the start_time column
 
 # ............................................................................
 
@@ -125,9 +126,17 @@ for j in range(1, len(paths)):
         group_info = pd.read_csv(group_info_file)
         group_time = float(group_info["group_time"][0])
         group_time_unit = str(group_info["group_time_unit"][0])
+
+        # start_time was added later, so files written before it are still valid
+
+        if "start_time" in group_info.columns:
+            start_time = float(group_info["start_time"][0])
+        else:
+            start_time = start_time_default
     else:
         group_time = group_time_default
         group_time_unit = group_time_unit_default
+        start_time = start_time_default
         print(
             "  no 0_group_info.csv found, assuming one group =",
             group_time,
@@ -291,9 +300,10 @@ for j in range(1, len(paths)):
     d50_mu = np.linspace(0, len(d_mu.columns) - 1, len(d_mu.columns))
     d84_mu = np.linspace(0, len(d_mu.columns) - 1, len(d_mu.columns))
 
-    # elapsed time at the end of each group, in the unit set in 1_ImageProcess_v04.py
+    # time at the end of each group, offset by any time already elapsed before the
+    # first image, in the unit set in 1_ImageProcess_v04.py
 
-    t_group = np.arange(1, len(d_mu.columns) + 1) * group_time
+    t_group = start_time + np.arange(1, len(d_mu.columns) + 1) * group_time
     time_label = "time [" + group_time_unit + "]"
 
     first = 0
