@@ -14,6 +14,12 @@ group_time_unit = "s"  # unit for group_time, e.g. "min", "s", "hr". Both values
 # written to 0_group_info.csv and picked up by 2_ParticleDataProcess_v08.py to set the
 # time column of its output csv files and the time axis of its plots
 
+start_time = 0  # real time already elapsed when the first image was taken, in the
+# same unit as group_time. With start_time = 56 and group_time = 30, the first group is
+# reported at 86, the second at 116, and so on. Step 2 uses it for the time column of its
+# output csv files and the time axis of its plots. Leave at 0 for time measured from the
+# first image
+
 group_time_tol = 0.2  # group_time above is taken as correct, but it is checked against
 # the image modification times and a warning is printed if the two disagree by more than
 # this fraction. Set to 0 to turn the check off
@@ -222,8 +228,8 @@ if subdirp == 1:
         # save the grouping time base so that step 2 can label its output
 
         group_info_df = pd.DataFrame(
-            [[dir_size, group_time, group_time_unit]],
-            columns=["dir_size", "group_time", "group_time_unit"],
+            [[dir_size, group_time, group_time_unit, start_time]],
+            columns=["dir_size", "group_time", "group_time_unit", "start_time"],
         )
         group_info_df.to_csv(path_main + "/0_group_info.csv", index=False)
 
@@ -343,8 +349,8 @@ if subdirp == 0:
     # save the grouping time base so that step 2 can label its output
 
     group_info_df = pd.DataFrame(
-        [[dir_size, group_time, group_time_unit]],
-        columns=["dir_size", "group_time", "group_time_unit"],
+        [[dir_size, group_time, group_time_unit, start_time]],
+        columns=["dir_size", "group_time", "group_time_unit", "start_time"],
     )
     group_info_df.to_csv(path_main + "/0_group_info.csv", index=False)
 
