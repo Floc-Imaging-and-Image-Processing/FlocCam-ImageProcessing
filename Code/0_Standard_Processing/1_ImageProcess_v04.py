@@ -7,10 +7,10 @@
 where = "0_Paths.csv"  # manage paths with the 0_Paths.csv file if you don't run the file locally
 
 ts = 1  # enter 1 if you want PSD time series output. Enter zero for a single PSD. If "1" then a dir_size must be specified
-dir_size = 10  # number of images to include per distribution, ignored if ts = 0
+dir_size = 5  # number of images to include per distribution, ignored if ts = 0
 
-group_time = 1  # length of real time that one group of dir_size images represents
-group_time_unit = "min"  # unit for group_time, e.g. "min", "s", "hr". Both values are
+group_time = 30  # length of real time that one group of dir_size images represents
+group_time_unit = "s"  # unit for group_time, e.g. "min", "s", "hr". Both values are
 # written to 0_group_info.csv and picked up by 2_ParticleDataProcess_v08.py to set the
 # time column of its output csv files and the time axis of its plots
 
@@ -19,8 +19,8 @@ group_time_tol = 0.2  # group_time above is taken as correct, but it is checked 
 # this fraction. Set to 0 to turn the check off
 image_type = ".jpg"  # enter the file extention for your images
 
-IJcode = "ImageJ-macros/ImageJ_code_diff_v02.txt"
-# IJcode = "ImageJ-macros/ImageJ_code_diff_v02_suppressoutput.txt"
+# IJcode = "ImageJ-macros/ImageJ_code_diff_v02.txt"
+IJcode = "ImageJ-macros/ImageJ_code_diff_v02_suppressoutput.txt"
 # IJcode = "ImageJ-macros/ImageJ_code_diff_watershed_v02.txt"
 
 overlap = 1  # copy the first image of the next batch into each batch as one extra
@@ -114,12 +114,14 @@ def check_group_time(modtime_list, dir_size, group_time, group_time_unit, tol, t
             "Update group_time, or ignore this if the file times are unreliable.",
         )
 
+
 if where == "local":
     master_path = os.getcwd()
     CodePath = master_path
 else:
     paths = pd.read_csv(where)
-    master_path = paths.iloc[0, 1]
+    master_path = str(paths.iloc[0, 1]).strip()  # strip guards against a stray
+    # space after the comma in 0_Paths.csv, which would otherwise be part of the path
     CodePath = os.getcwd()
 
 # for processing all folders in directory ------------------------------------------
