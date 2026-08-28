@@ -36,6 +36,7 @@ Set `where = "local"` in any script to use `os.getcwd()` instead of the CSV.
 - Groups raw images into numbered subdirectories (e.g., `001/`, `002/`) of `dir_size` images each
 - With `overlap = 1` (default) each subdirectory also gets a copy of the first image of the next batch, so the difference macro yields `dir_size` datasets per batch instead of `dir_size-1` — the last image of a batch is no longer left unpaired. That copy is excluded from `filemod_list.csv` and from `rmsrc` deletion, since the same image is recorded and deleted when it starts the next batch. The final batch gets no overlap image if no further images remain
 - Records source/destination/modification-time in `filemod_list.csv` (used later for timestamp extraction)
+- `rmcopies` (default 0) controls whether the image copies inside the numbered batch directories are deleted once ImageJ has finished with them. It is separate from `rmsrc`, which deletes the originals before ImageJ runs. With `rmcopies = 0` a run leaves a full duplicate of every processed image on disk; the `.txt` measurements and any outline/edge images the macro writes are never removed
 - Invokes ImageJ headlessly: `<java_cmd> -jar ij.jar -batch <macro>`. `java_cmd` defaults to `java`; on Apple Silicon the macOS system Java 8 prints `CodeCache is full. Compiler has been disabled.` partway through a run and falls back to interpreted execution (output is still correct, just slow), so point `java_cmd` at a modern arm64 JDK such as `/opt/homebrew/opt/openjdk/bin/java` to avoid it
 - Key user parameters at top: `ts` (time series vs. single PSD), `dir_size`, `image_type`, `subdirp` (recurse subdirs), `rmsrc` (delete originals)
 - `group_time` and `group_time_unit` record how much real time one group of `dir_size` images represents, and `start_time` (default 0) records any time already elapsed before the first image, in the same unit — with `start_time = 56` and `group_time = 30` the first group is reported at 86. All three are written to `0_group_info.csv` in the image directory and read back by Step 2, which uses them for the time index of `dstats_*.csv` and the time axis of the PDF plots. Step 2 falls back to 1 min per group if the file is absent, and to `start_time = 0` if the file predates that column, so older datasets still process
@@ -45,6 +46,7 @@ Set `where = "local"` in any script to use `os.getcwd()` instead of the CSV.
 - Implement a *difference-of-images* technique: subtracts consecutive image pairs to isolate particles from background
 - Applies Triangle threshold → binary → erode → fill holes → `Analyze Particles`
 - Outputs one `.txt` file per image pair containing particle measurements (area, perimeter, bounding box, ellipse fit, etc.)
+- The macros no longer delete each image as they difference it; the copies are left in the batch directories and Step 1 removes them afterwards if `rmcopies = 1`
 - `_suppressoutput` variant is the default; `_watershed` variant adds watershed segmentation for touching particles
 
 **Step 2 — `2_ParticleDataProcess_v08.py`** (current version)
