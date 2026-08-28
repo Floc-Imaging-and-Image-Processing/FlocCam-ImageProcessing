@@ -92,8 +92,9 @@ for (i=0; i<list1.length; i++) {
       // saveAs("Jpeg", path1+"edges.jpg");
       close("*");
 
-      // delete the first image in the difference to save space
+      // the images used in the difference are left in place. 1_ImageProcess_v04.py
+      // deletes the copies after this macro finishes if rmcopies = 1 there
 
-      dummy = File.delete(dir2+list2[j]); // result of delete (1 or 0) is stored in a dummy variable so that it doesn't print out
+      // dummy = File.delete(dir2+list2[j]); // result of delete (1 or 0) is stored in a dummy variable so that it doesn't print out
    }
 }

@@ -39,6 +39,12 @@ overlap = 1  # copy the first image of the next batch into each batch as one ext
 # original behaviour, where a batch of dir_size images yields dir_size-1 datasets.
 # The copied image still starts the next batch as its own first image.
 
+rmcopies = 0  # delete the image copies inside each numbered batch directory once
+# ImageJ has finished with them. Enter 1 to delete, 0 to keep. The macro used to delete
+# each image as it was differenced; it no longer does, so with rmcopies = 0 the batch
+# directories keep a full copy of every image processed. The .txt measurement files and
+# any outline/edge images the macro writes are never touched
+
 rmsrc = 0  # remove source images variable. enter 0 for "no" and "1" for yes
 subdirp = (
     0  # process all sub directories (subdirp = 1) or just the local one (subdirp = 0)
@@ -177,6 +183,7 @@ if subdirp == 1:
 
         src_list = []
         dst_list = []
+        copy_list = []  # every file copied into the batch directories, for rmcopies
 
         pad = len(
             str(dir_size + overlap)
@@ -208,6 +215,7 @@ if subdirp == 1:
                 src = os.path.join(path_main, sorted_files[int(f) * dir_size + g])
                 dst = os.path.join(psd_path, (str(int(g + 1)).zfill(pad) + image_type))
                 copyfile(src, dst)
+                copy_list.append(dst)
 
                 if g < dir_size:
                     src_list.append(src)
@@ -246,6 +254,14 @@ if subdirp == 1:
             + '"'
         )
         os.system(str1)
+
+        # remove the image copies now that ImageJ is done with them
+
+        if rmcopies == 1:
+            for copied in copy_list:
+                if exists(copied):
+                    os.remove(copied)
+            print("removed", len(copy_list), "image copies from the batch directories")
 
         # go back to the main folder
         print(
@@ -298,6 +314,7 @@ if subdirp == 0:
 
     src_list = []
     dst_list = []
+    copy_list = []  # every file copied into the batch directories, for rmcopies
 
     pad = len(
         str(dir_size + overlap)
@@ -329,6 +346,7 @@ if subdirp == 0:
             src = os.path.join(path_main, sorted_files[int(f) * dir_size + g])
             dst = os.path.join(psd_path, (str(int(g + 1)).zfill(pad) + image_type))
             copyfile(src, dst)
+            copy_list.append(dst)
 
             if g < dir_size:
                 src_list.append(src)
@@ -367,6 +385,14 @@ if subdirp == 0:
         + '"'
     )
     os.system(str1)
+
+    # remove the image copies now that ImageJ is done with them
+
+    if rmcopies == 1:
+        for copied in copy_list:
+            if exists(copied):
+                os.remove(copied)
+        print("removed", len(copy_list), "image copies from the batch directories")
 
     print(
         "run time:",
