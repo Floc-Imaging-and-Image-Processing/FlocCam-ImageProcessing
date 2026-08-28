@@ -23,6 +23,11 @@ image_type = ".jpg"  # enter the file extention for your images
 IJcode = "ImageJ-macros/ImageJ_code_diff_v02_suppressoutput.txt"
 # IJcode = "ImageJ-macros/ImageJ_code_diff_watershed_v02.txt"
 
+java_cmd = "java"  # java used to run ImageJ. The macOS system java 8 disables its JIT
+# partway through a run ("CodeCache is full"), which still gives correct output but runs
+# interpreted and slow. Point this at a modern arm64 JDK to avoid that, for example
+# java_cmd = "/opt/homebrew/opt/openjdk/bin/java". Flags can be appended, e.g. "java -Xmx4g"
+
 overlap = 1  # copy the first image of the next batch into each batch as one extra
 # frame, so the last image of the batch also gets differenced. Enter 0 for the
 # original behaviour, where a batch of dir_size images yields dir_size-1 datasets.
@@ -224,7 +229,16 @@ if subdirp == 1:
 
         # run ImageJ
 
-        str1 = "java -jar " + CodePath + "/ij.jar -batch " + CodePath + "/" + IJcode
+        str1 = (
+            java_cmd
+            + ' -jar "'
+            + CodePath
+            + '/ij.jar" -batch "'
+            + CodePath
+            + "/"
+            + IJcode
+            + '"'
+        )
         os.system(str1)
 
         # go back to the main folder
@@ -336,7 +350,16 @@ if subdirp == 0:
 
     # run ImageJ
 
-    str1 = "java -jar " + CodePath + "/ij.jar -batch " + CodePath + "/" + IJcode
+    str1 = (
+        java_cmd
+        + ' -jar "'
+        + CodePath
+        + '/ij.jar" -batch "'
+        + CodePath
+        + "/"
+        + IJcode
+        + '"'
+    )
     os.system(str1)
 
     print(
