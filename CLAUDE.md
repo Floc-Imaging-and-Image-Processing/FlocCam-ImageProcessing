@@ -56,7 +56,7 @@ Set `where = "local"` in any script to use `os.getcwd()` instead of the CSV.
 - `2_ParticleDataProcess_v07.py` is kept as the previous version. It additionally ran every image through a scikit-learn streak classifier and could drop streak-flagged particles; v08 removes that entirely, so every image passing the three filters contributes to the PSD. v07 also crashes on the second image directory (`Readme.txt` opened with mode `'x'` inside the per-directory loop); v08 writes no `Readme.txt` at all, since its only purpose was reporting streak counts
 
 **Step 3 — `3_ParticleDataVisualization_v02.py`**
-- Reads `d_mu.csv` and plots a single PSD or averaged range of PSDs
+- Reads `d_mu.csv` and plots a single PSD (`groupoi`) or an averaged range of PSDs (`groupfirst` to `grouplast`, with `combine = "yes"`). These are group numbers — one column of `d_mu.csv` each — not minutes; how much real time a group spans is set by `group_time` in Step 1
 - Optionally bins onto LISST size classes from `../LISST_bins/LISST_bins_sphere.csv`
 
 ### Profile Processing (`Code/1_Profile_Processing/`)
